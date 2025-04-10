@@ -1,5 +1,5 @@
 import * as functions from "firebase-functions";
-import { auth } from "./admin";
+import { auth, db } from "./admin";
 
 type SetClaimRequestData = {
   uid: string;
@@ -32,6 +32,26 @@ export const setCustomUserClaims = functions.https.onCall(
     }
 
     try {
+      if (role === "motoboy") {
+        const motoboyDoc = await db.collection("motoboy").doc(uid).get();
+        if (!motoboyDoc.exists) {
+          throw new functions.https.HttpsError(
+            "not-found",
+            "Motoboy com o UID fornecido não encontrado."
+          );
+        }
+      }
+
+      if (role === "empresa") {
+        const empresaDoc = await db.collection("company").doc(uid).get();
+        if (!empresaDoc.exists) {
+          throw new functions.https.HttpsError(
+            "not-found",
+            "Empresa com o UID fornecido não encontrada."
+          );
+        }
+      }
+
       await auth.setCustomUserClaims(uid, { role });
       return { message: `Custom claim definida: ${uid} => ${role}` };
     } catch (error: any) {
