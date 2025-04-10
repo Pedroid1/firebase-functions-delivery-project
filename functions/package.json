@@ -4,6 +4,7 @@
     "build": "tsc",
     "build:watch": "tsc --watch",
     "dev": "npm run build && firebase emulators:start --inspect-functions --only functions",
+    "set-admin-claim": "ts-node scripts/setAdminClaim.ts",
     "serve": "npm run build && firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
