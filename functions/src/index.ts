@@ -1,5 +1,9 @@
 import { onCreateDeliveryRequest } from "./onCreateDeliveryRequest";
 import { onDeleteDeliveryRequest } from "./onDeleteDeliveryRequest";
-import { setCustomUserClaims } from "./setCustomUserClaims";
+import { setCompanyClaim } from "./setCompanyClaim";
+import { setMotoBoyClaim } from "./setMotoBoyClaim";
+import { setGlobalOptions } from "firebase-functions/v2/options";
 
-export { onCreateDeliveryRequest, onDeleteDeliveryRequest, setCustomUserClaims };
+setGlobalOptions({ region: "southamerica-east1" });
+
+export { onCreateDeliveryRequest, onDeleteDeliveryRequest, setMotoBoyClaim, setCompanyClaim };
