@@ -51,6 +51,15 @@ export const onMotoBoyStatusChange = functions.firestore.onDocumentUpdated(
           } else {
             console.log(`Successfully unsubscribed ${uid} from topic ${topic}`);
           }
+
+          // Remove da fila se ele estava lá
+          const queueDocRef = db.collection("queue").doc(uid);
+          const queueDoc = await queueDocRef.get();
+
+          if (queueDoc.exists) {
+              await queueDocRef.delete();
+              console.log(`Motoboy ${uid} removido da fila`);
+          }
         }
       } catch (error) {
         console.error(`Error managing topic subscription for ${uid}:`, error);

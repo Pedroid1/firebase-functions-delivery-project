@@ -28,16 +28,6 @@ export const onDeliveryStatusChanged = onDocumentUpdated(
             // Quando motoboy assume uma entrega → BUSY
             await motoboyDocRef.update({ status: "BUSY" });
             console.log(`Motoboy ${motoBoyId} agora está BUSY`);
-
-            // Remove da fila se ele estava lá
-            const queueDocRef = db.collection("queue").doc(motoBoyId);
-            const queueDoc = await queueDocRef.get();
-
-            if (queueDoc.exists) {
-                await queueDocRef.delete();
-                console.log(`Motoboy ${motoBoyId} removido da fila`);
-            }
-
             return;
         }
 
