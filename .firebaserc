@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "deliveryproject-630b1"
-  }
+    "vip-entregas-ambiente-dev": "vip-entregas---dev",
+    "vip-entregas-ambiente-prod": "vip-entregas---prod"
+  },
+  "targets": {},
+  "etags": {}
 }
