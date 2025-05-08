@@ -1,44 +1,72 @@
 import { messaging } from "./admin";
 import { db } from "./admin";
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
+import { Logger } from "./utils/Logger";
 
 export const onCreateDeliveryRequest = onDocumentCreated(
-  'delivery_request/{docId}',
+  "delivery_request/{docId}",
   async (event) => {
+    const logger = new Logger();
+    logger.log("onCreateDeliveryRequest triggered");
+
     const data = event.data?.data();
     if (!data) {
-      console.error("No delivery request data found");
+      logger.error("No delivery request data found");
+      logger.printAll();
       return;
     }
 
     const companyId = data.companyId;
-    let companyName: string | undefined;
+    const docId = event.params.docId;
+    logger.log(`Nova entrega criada - docId: ${docId}, empresaId: ${companyId}`);
 
-    try {
-      const companyDoc = await db.collection('company').doc(companyId).get();
-      if (companyDoc.exists) {
-        const companyData = companyDoc.data();
-        companyName = companyData?.name;
+    const companyName = await getCompanyName(companyId);
+    const message = buildNotification(companyName);
+
+    await sendNotification(message);
+
+    logger.printAll();
+
+    // 🔽 🔽 🔽 Funções locais reutilizáveis abaixo 🔽 🔽 🔽
+
+    async function getCompanyName(companyId: string): Promise<string | undefined> {
+      try {
+        const companyDoc = await db.collection("company").doc(companyId).get();
+        if (companyDoc.exists) {
+          const name = companyDoc.data()?.name;
+          logger.log(`Empresa encontrada: ${name}`);
+          return name;
+        } else {
+          logger.warn(`Empresa não encontrada: ${companyId}`);
+        }
+      } catch (error) {
+        logger.error(`Erro ao buscar empresa ${companyId}: ${String(error)}`);
       }
-    } catch (error) {
-      console.error("Failed to fetch company name:", error);
     }
 
-    const message = {
-      topic: "deliveryRequest",
-      notification: {
-        title: "Entrega disponível!",
-        body: companyName
-          ? `Nova entrega para ${companyName}.`
-          : "Nova entrega disponível no App."
-      }
-    };
+    function buildNotification(companyName?: string) {
+      const body = companyName
+        ? `Nova entrega para ${companyName}.`
+        : "Nova entrega disponível no App.";
 
-    try {
-      await messaging.send(message);
-      console.log("Notification sent successfully");
-    } catch (error) {
-      console.error("Error sending notification:", error);
+      logger.log(`Notificação gerada: "${body}"`);
+
+      return {
+        topic: "deliveryRequest",
+        notification: {
+          title: "Entrega disponível!",
+          body,
+        },
+      };
+    }
+
+    async function sendNotification(message: any) {
+      try {
+        await messaging.send(message);
+        logger.log("Notificação enviada com sucesso");
+      } catch (error) {
+        logger.error(`Erro ao enviar notificação: ${String(error)}`);
+      }
     }
   }
 );
